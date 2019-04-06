@@ -104,7 +104,7 @@ spring-aop-4.3.6.RELEASE.jar
 
 类成员变量
 
-​	@Autowired 自动将Bean类装配
+​	**@Autowired** 自动将Bean类安装其类型装配
 
 ​	@Resource（name=“userDao”）
 
@@ -113,9 +113,10 @@ spring-aop-4.3.6.RELEASE.jar
 <context:component-scan base-package="包名" />
 ```
 
-c.自动装配
+##### c.自动装配autowire
 
 ```xml
+并且在类下设置set方法！
 <bean id=" " class=" " autowire="byName"
 ```
 
