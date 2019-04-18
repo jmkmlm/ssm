@@ -460,9 +460,15 @@ log4j.appender.stdout.layout=org.apache.log4j.PatternLayout
 log4j.appender.stdout.layout.ConversionPattern=%5p [%t] - %m%n
 ```
 
-##### 2.持久化类Customer与数据库字段对应
+##### 2.持久化类与数据库字段对应
 
 即Javabean
+
+a.javaBean中属性名与数据库属性相同
+
+b.javaBean中属性名与数据库属性不同
+
+​	
 
 ##### 3.映射文件CustomerMapper.xml
 
@@ -470,10 +476,6 @@ log4j.appender.stdout.layout.ConversionPattern=%5p [%t] - %m%n
 
 ```xml
 <mapper namespace="com.itheima.mapper.CustomerMapper">
-	<select id="findCustomerById" parameterType="Integer"
-		resultType="com.itheima.po.Customer">
-		select * from t_customer where id = #{id}
-	</select>
 	<select id="findCustomerByName" parameterType="String" resultType="com.itheima.po.Customer">
 		select * from t_customer where username like concat('%',#{value},'%');
 	</select>
@@ -499,7 +501,7 @@ mybatis核心配置文件
 	<environments default="mysql">
 		<environment id="mysql">
 			<transactionManager type="JDBC" />
-			<dataSource type="POOLED">
+			<dataSource type="POOLED">//三种连接类型：UNPoolED、JNDI
 				<property name="driver" value="${jdbc.driver}" />
 				<property name="url" value="${jdbc.url}" />
 				<property name="username" value="${jdbc.username}" />
@@ -507,10 +509,17 @@ mybatis核心配置文件
 			</dataSource>
 		</environment>
 	</environments>
-     <!--2.mapper-->
+    
+     <!--2.mapper指定映射文件路径-->
 	<mappers>
 		<mapper resource="com/itheima/mapper/CustomerMapper.xml" />
 	</mappers>
+    
+    <!--3.设置别名 -->
+    <typeAliases>
+    	<typeAliase type="com.itheima.po.User" />//自动设置别名为小写的user
+        <package name="com.itheima.po" />
+    </typeAliases>
 </configuration>
 ```
 
@@ -521,9 +530,70 @@ jdbc.driver=com.mysql.jdbc.Driver
 jdbc.url=jdbc:mysql://localhost:3306/mybatis
 jdbc.username=root
 jdbc.password=123456
+jdbc.maxTotal=30
+jdbc.maxIdle=10
+jdbc.initalSize=5
 ```
 
-##### 5.test
+##### 5.映射文件
+
+```xml
+<mapper namespace="com.itheima.mapper.CustomerMapper">
+    
+    <select id="findCustomerByNameAndJobs" parameterType="com.itheima.po.Customer" 
+	resultType="com.itheima.po.Customer" resultMap="resultMap">
+        select * from t_customer where 1=1
+    </select>
+    
+    <!-- mysql自动生成id-->
+    <insert id="addCustomer" paramterType="" keyProperty="id" useGeneratedKeys="true">
+    	insert into t_customer(username) values(#{username})
+    </insert>
+    <!-- oracle不自动生成id-->
+    <insert id="addCustomer" paramterType="" >
+        <selectKey keyProperty="id" resultType="Integer" order="BEFORE">
+        	select if(max(id) is null,1,max(id)+1) as newId from t_customer
+        </selectKey>
+    	insert into t_customer(username) values(#{username})
+    </insert>
+    
+    <update id="" paramterType=""></update>
+    <delete id="" paramterType=""></delete>
+    <sql id="">phone,username,phone</sql>
+    
+    <resultMap id="" type="User">
+    	<id property="id" column="t_id"/>
+        <result property="name" column="t_name" />
+    </resultMap>
+</mapper>
+```
+
+##### 6.动态sql
+
+```xml
+<if test=" user !=null"></if>
+
+<choose>
+	<when test=""></when>
+    <otherwise></otherwise>
+</choose>
+
+<where>
+	<if test=""></if>
+</where>
+
+<trim prefix="where" prefixOverrides="and"></trim>
+
+<set>
+	<if test=""></if>
+</set>
+
+<foreach item="id" index="index" collection="list/array/map" open="(" separator="," close=")">
+	#{id}
+</foreach>
+```
+
+##### 7.test
 
 ```java
 //a.读取mybatis配置文件
@@ -532,9 +602,233 @@ InputStream inputStream = Resources.getResourceAsStream(resource);
 SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
 //c.通过SqlSessionFactory打开SQLSession
 SqlSession sqlSession = sqlSessionFactory.openSession();
-//d.SQLSession执行映射文件中sql
+
+//d.SQLSession执行映射文件
 Customer customer = sqlSession.selectOne("com.itheima.mapper"+".CustomerMapper.findCustomerById", 1);
+
 //e.关闭SQLSession
 sqlSession.close();
+```
+
+##### 8.两个核心对象
+
+###### a.SqlSessionFactory
+
+> 单个数据库映射关系经过编译后的内存镜像，作用是创建SqlSession
+>
+> 线程安全，一旦被创建，应用执行期间都存在，为了节约资源，采用单例模式
+
+`SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);`
+
+###### b.SqlSession
+
+> 它与持久层之间操作一个单线程对象，作用是持久化操作
+>
+> SqLSession包含数据库jdbc操作方法，可直接执行sql语句
+>
+> 线程不安全，一个请求绝不能放在一个类静态字段
+
+`SqlSession sqlSession = sqlSessionFactory.openSession();//执行映射文件`
+
+##### 9.多表关联映射
+
+###### a.一对一
+
+person的id与card的id一一对应
+
+```xml
+<select id="findPersonById2" parameterType="Integer" resultMap="IdCardWithPersonResult2">
+		select p.*,idcard.code
+		from tb_person p,tb_idcard idcard
+		where p.card_id=idcard.id
+		and p.id = #{id}
+</select>
+<resultMap type="Person" id="IdCardWithPersonResult2">
+		<id property="id" column="id"></id>
+		<result property="name" column="name"/>
+		<result property="age" column="age"/>
+		<result property="sex" column="sex"/>
+		<association property="card" javaType="IdCard" >
+			<id property="id" column="card_id"></id>
+			<result property="code" column="code"/>
+		</association>
+</resultMap>
+```
+
+###### b.一对多
+
+User中id和order中id一对多
+
+```xml
+<select id="findUserWithOrders" parameterType="Integer" resultMap="UserWithOrderResult">
+		select u.*,o.id as orders_id,o.number 
+		from tb_user u,tb_orders o
+		where u.id = o.user_id
+		and u.id=#{id}
+</select>
+<resultMap type="User" id="UserWithOrderResult">
+		<id property="id" column="id"/>
+		<result property="username" column="username"/>
+		<result property="address" column="address"/>
+		<collection property="ordersList" ofType="Orders">
+			<id property="id" column="orders_id"/>
+			<result property="number" column="number"/>
+		</collection>
+</resultMap>
+```
+
+###### c.多对多
+
+order的id对应中间表中order_id一对多
+
+product的id对应中间表中product_id一对多
+
+```xml
+<select id="findOrdersWithProduct" parameterType="Integer" resultMap="OrdersWithProductResult">
+		select * from tb_orders where id=#{id}
+</select>
+<resultMap type="Orders" id="OrdersWithProductResult">
+		<id property="id" column="id"/>
+		<result property="number" column="number"/>
+		<collection property="productList" column="id"  ofType="Product" 
+			select="com.itheima.mapper.ProductMapper.findProductById">
+		</collection>
+</resultMap>
+```
+
+### MyBatis+Spring
+
+##### 1.Dao整合
+
+###### a.application.xml
+
+> 数据库连接
+>
+> 事务管理、事务注解扫描
+>
+> MyBatis工厂配置数据源
+>
+> 在CustomerImpl注入SqLSession
+
+###### b.mybatis-config.xml
+
+> 配置类别名
+>
+> 配置mapper映射位置
+
+##### 2.传统DAO层整合
+
+SqlSessionDaoSupport实现SqLSessionFactory
+
+```java
+public class CustomerImpl extends SqlSessionDaoSupport implements CustomerDao{
+	public Customer findCustomerById(Integer id) {
+		return this.getSqlSession().selectOne("com.itheima.mapper"+
+                                              ".CustomerMapper.findCustomerById",id);
+	}
+}
+```
+
+##### 3.Mapper接口整合
+
+###### a.MapperFactoryBean整合
+
+在applicationContext.xml中配置来实现SqLSessionFactory
+
+```xml
+<bean id="customerMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="com.itheima.mapper.CustomerMapper"/>
+		<property name="sqlSessionFactory" ref="sqlSessionFactory"/>
+</bean>
+```
+
+###### b.MapperScannerConfigurer整合
+
+自动扫描，在applicationContext.xml中配置来实现SqLSessionFactory
+
+```xml
+<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="com.itheima.mapper"></property>
+</bean>
+```
+
+##### 4.Spring事务管理Service层
+
+@Transactional标识事务处理的类
+
+`<context:component-scan base-package="com.itheima.service"></context:component-scan>`
+
+### SpringMVC
+
+##### 1.web.xml
+
+有init则加载其springmvc-config.xml配置文件；
+
+如果无init，则加载第一个servlet的名字的xml文件，如springmvc-servlet.xml
+
+```xml
+<servlet>
+ <!-- 前端过滤器 -->
+ <servlet-name>springmvc</servlet-name>
+ <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+ <!-- 初始化加载配置文件 -->
+ <init-param>
+         <param-name>contextConfigLocation</param-name>
+         <param-value>classpath:springmvc-config.xml</param-value>
+  </init-param>
+         <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+         <servlet-name>springmvc</servlet-name>
+         <url-pattern>/</url-pattern>
+   </servlet-mapping>
+<!--编码-->
+   <filter>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+        	
+        <init-param>
+        	<param-name>encoding</param-name>
+        	<param-value>UTF-8</param-value>
+        </init-param>
+   </filter>        
+   <filter-mapping>
+        <filter-name>CharacterEncodingFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+   </filter-mapping>
+```
+
+##### 2.springmvc-config.xml
+
+指定扫描控制层的包
+
+```xml
+<!--控制层扫描-->
+<context:component-scan base-package="com.itheima.controller" />
+
+ <!-- 视图解析器 -->
+<bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+ 	<property name="prefix" value="/WEB-INF/jsp/"/>
+ 	<property name="suffix" value=".jsp"/>
+</bean>
+```
+
+##### 3.@RequestMapping
+
+> spring通过@RequestMapping（）寻找Controller
+>
+> ​	只有一个属性，省value；（value="/find",method="RequesstMethod.GET"）
+>
+> String返回值只跳转视图:“redirect:query”,"forward:query"
+>
+> model只携带数据，实现解耦合
+
+```java
+@RequestMapping("/findCustomerById")
+public String findCustomerById(Integer id,Model model) {
+		Customer customer = customerService.findCustomerById(id);
+		model.addAttribute("customer",customer);
+		return "first.jsp";
+}
 ```
 
