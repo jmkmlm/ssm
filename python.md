@@ -68,6 +68,7 @@ set[1] # ×
 ```python
 3/2
 1.5 #数学上除法
+int(1.5)#强转为1
 
 15//4
 3 #整除
@@ -123,8 +124,6 @@ max([],key=len) key指定规则
 
 print('i=',i,sep=' ',end='\n')
 
-import random
-random.shuffle(x) 打乱
 x.sort()
 	sorted(x,key=lambda item:len(str(item)),reverse=True)
 x.reverse()
@@ -207,9 +206,36 @@ len() max() sorted() map() filter() enumerate()
 
 ##### 8.序列解包
 
-列表、字典、enumerate对象、filter对象、zip对象
+> 定义：把一个序列或可迭代对象中的多个元素值同时赋值给多个变量。要求等号**左右两边数量**必须一致。
 
-##### 7.选择、循环
+列表、字典（items方法、字典values方法）、enumerate对象、filter对象、zip对象、字符串均可序列解包。
+
+```python
+a = [1,2,3]
+b,c,d = a
+print(b,c,d,sep=" ")
+print("--------------")
+s={'a':1,'b':2,'c':3}
+b,c,d = s.items()
+print(b,c,d,sep=" ")
+b,c,d = s.values()
+print(b,c,d,sep=" ")
+print("--------------")
+a = "ABC"
+b,c,d = a
+print(b,c,d,sep=" ")
+
+1 2 3
+--------------
+('a', 1) ('b', 2) ('c', 3)
+1 2 3
+--------------
+A B C
+```
+
+
+
+##### 7.条件、循环
 
 ```python
 if __:
@@ -217,6 +243,9 @@ elif __:
     
 for i in set:   
 else:最后执行，若break结束，则不执行
+    
+while x:
+else:
 ```
 
 ##### 8.函数
@@ -256,6 +285,7 @@ global x 在函数内全局变量声明
 ##### 11.生成器函数（yield语句）
 
 ```python
+
 yield:返回值，挂起后面代码，下次通过__next__()、next()继续执行
 return:返回值后立刻结束函数
 ```
@@ -390,4 +420,101 @@ fy.show()
 `isalnum() isalpha() isdigit() isspace() isupper() islower()`
 
 `in`
+
+##### 14.random
+
+```python
+import random
+x=[3, 2, 1, 4, 5, 6]
+random.choice(x)  //随机选一个元素
+5
+random.sample(x,2)  //指定范围内选不重复元素
+[1, 6]
+random.randint(1,10) //随机从指定范围生成一个数
+6
+random.random()//生成[0,1）的数
+0.9467707603239115
+random.shuffle(x)
+```
+
+```python
+from random import randrange
+str(randrange(1,15,1))  //random.randrange([start], stop[, step])
+'14'
+```
+
+问答题
+
+1.元组和列表的区别
+
+> a.元组和列表都属于有序序列，都支持双向索引随机访问元素，均可使用count()、index()、len()等内置方法
+>
+> b.元组属于不可变序列，不可直接修改元组元素值，也无法增加或删除元素；
+>
+> c.元组支持切片访问元组元素，不允许使用切片修改元组的值
+>
+> d.元组访问速度比列表快，主要用于遍历，由于内部不允许修改，故更安全。
+
+2.函数题
+
+```python
+#生成斐波那契数列的生成器函数
+def f():
+    a,b = 1,1
+    while True:
+        yield a
+        a,b=b,a+b
+a = f()
+for i in range(10):
+    print(next(a),end=" ")
+    
+1 1 2 3 5 8 13 21 34 55 
+```
+
+3.split补充
+
+> a.换行符、制表符都为空格分隔符
+>
+> b.自动删除头部**或者**尾部的空格分隔符
+
+```python
+s="\n\nhello\t\tworld\n\nMy name is Dong        "
+print(s.split(maxsplit=1))
+print(s.rsplit(maxsplit=1))
+print(s.split())
+
+['hello', 'world\n\nMy name is Dong        ']
+['\n\nhello\t\tworld\n\nMy name is', 'Dong']
+['hello', 'world', 'My', 'name', 'is', 'Dong']
+```
+
+4.join补充
+
+> a.join()将列表中多个字符串连接
+>
+> b.和split组合使用生成字符串
+
+```python
+y=['apple','peach','banana','pear']
+print(":".join(y))
+x='aaa   bb   c d e    fff'
+print(x.split())
+print(" ".join(x.split()))
+
+apple:peach:banana:pear
+['aaa', 'bb', 'c', 'd', 'e', 'fff']
+aaa bb c d e fff
+```
+
+5.列表推导式
+
+```python
+vec = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+[num for elem in vec for num in elem]
+
+
+[1, 2, 3, 4, 5, 6, 7, 8, 9]
+```
+
+
 

@@ -1,4 +1,4 @@
-# Spring
+## 一、Spring
 
 ###  1.依赖注入
 
@@ -16,7 +16,28 @@
 </bean>
 ```
 
+以下为xml的Bean装配：
 
+##### a.构造方法注入
+
+带参数的构造方法
+
+##### b.setter方法注入
+
+```java
+public class UserServiceImpl implements UserService{
+	private UserDao userDao;
+	//添加UserDao属性的setter方法
+	public void setUserDao(UserDao userDao) {
+		this.userDao = userDao;
+	}
+    @Override
+	public void say() {
+		this.userDao.say();
+		System.out.println("UserService say");
+	}
+}
+```
 
 ### 2.Spring两种核心容器
 
@@ -31,7 +52,7 @@ ApplicationContext appli = new ClassPathXmlApplicationContext(xmlPath);
 Bean1 bean =(Bean1) appli.getBean("bean1");
 ```
 
-​	配置文件
+对应配置文件
 
 ```xml
 <!--实例化bean-->
@@ -46,16 +67,12 @@ Bean1 bean =(Bean1) appli.getBean("bean1");
  <bean id="bean1" class="com.itheima.instance.constructor.Bean1" />
 ```
 
-
-
 ##### b.静态工厂实例化
 
 ```xml
 <bean id="bean2" class="com.itheima.instance.static_factory.MyBean2Factory"
      factory-method="createBean" />
 ```
-
-
 
 ##### c.实例工厂实例化
 
@@ -67,7 +84,7 @@ Bean1 bean =(Bean1) appli.getBean("bean1");
 
 ### 4.Bean作用域
 
-- singleton：单例
+- singleton：单例（默认）
 
 - prototype：原型
 
@@ -84,7 +101,8 @@ Bean1 bean =(Bean1) appli.getBean("bean1");
 
 ##### a.xml装配
 
-​	设值注入：为所有变量设置setter()
+- 设值注入：为所有变量设置setter()
+
 
 ```xml
 <bean id="user" class="com.itheima.User">
@@ -92,7 +110,8 @@ Bean1 bean =(Bean1) appli.getBean("bean1");
 </bean>
 ```
 
-​	构造注入:提供含有所有参数的构造方法
+- 构造注入:提供含有所有参数的构造方法
+
 
 ```xml
 <bean id="user" class="com.itheima.User">
@@ -115,9 +134,9 @@ Bean1 bean =(Bean1) appli.getBean("bean1");
 
 类成员变量
 
-​	**@Autowired** 自动将Bean类安装其类型装配
+​	**@Autowired** 自动将Bean按照类型装配
 
-​	@Resource（name=“userDao”）
+​	@Resource（name=“userDao”）按照实例名称装配
 
 ```xml
 自动扫描包下所有的注解
@@ -128,7 +147,7 @@ Bean1 bean =(Bean1) appli.getBean("bean1");
 
 ```xml
 并且在类下设置set方法！
-<bean id=" " class=" " autowire="byName"
+<bean id=" " class=" " autowire="byName"></bean>
 ```
 
 ### 6.AOP面向切面编程
@@ -366,7 +385,7 @@ JdbcTemplate核心类
 
 > 两个实现类
 >
-> DataSOurceTransactionManager 配置事务管理
+> DataSourceTransactionManager 配置事务管理
 >
 > HibemateTransacitonManger：配置Hibernate事务管理
 
@@ -390,6 +409,16 @@ JdbcTemplate核心类
 
 - getTimeout();获取事务超时时间
 
+传播行为种类：指在同一个方法，不用操作前后所使用的事务
+
+| REQUIRED（默认） | 表示当前方法必须运行在一个事务环境，若不在，则开启该事务后执行方法 |
+| ---------------- | ------------------------------------------------------------ |
+| SUPPORTS         | 如果当前事务处于事务环境中，则使用，否则不使用事务           |
+|                  |                                                              |
+|                  |                                                              |
+
+
+
 ##### c.接口Transaction Status 事务状态
 
 六个方法：
@@ -405,6 +434,14 @@ JdbcTemplate核心类
 #### 声明式事务管理
 
 ##### 1.基于xml：提供tx命名空间来配置事务
+
+tx:method
+
+| name        | 必选属性，事务对应的方法名字 |
+| :---------- | ---------------------------- |
+| propagation | 传播行为                     |
+| isolation   | 隔离级别                     |
+| read-only   | 事务只读，默认false          |
 
 ```xml
 <!--5. 通知 -->
@@ -429,7 +466,7 @@ JdbcTemplate核心类
 @Transactional(propagation=Propagation.REQUIRED,isolation=Isolation.DEFAULT,readOnly=false)
 ```
 
-## MyBatis
+## 二、MyBatis
 
 > MyBatis框架也称为ORM框架（对象关系映射）--解决面向对象与关系型数据库中数据类型不匹配的技术。。
 >
@@ -439,7 +476,7 @@ JdbcTemplate核心类
 >
 > ---即
 >
-> 使用ORM框架胡，应用程序不再直接访问底层数据库，而是以面向对象来操作持久化对象po，而ORM会将面向对象操作转为底层的sql操作。
+> ### 使用ORM框架胡，应用程序不再直接访问底层数据库，而是以面向对象来操作持久化对象po，而ORM会将面向对象操作转为底层的sql操作。
 >
 > ---导入jar包
 >
@@ -464,13 +501,12 @@ log4j.appender.stdout.layout.ConversionPattern=%5p [%t] - %m%n
 
 即Javabean
 
-a.javaBean中属性名与数据库属性相同
+- a.javaBean中属性名与数据库属性相同
 
-b.javaBean中属性名与数据库属性不同
+- b.javaBean中属性名与数据库属性不同
 
-​	
 
-##### 3.映射文件CustomerMapper.xml
+##### 3.数据库方法操作映射文件CustomerMapper.xml
 
 将对数据库的操作（增删改查）与持久化类映射到一起
 
@@ -515,7 +551,7 @@ mybatis核心配置文件
 		<mapper resource="com/itheima/mapper/CustomerMapper.xml" />
 	</mappers>
     
-    <!--3.设置别名 -->
+    <!--3.设置配置文件中别名，别名用于替代出现在MyBatis任何位置 -->
     <typeAliases>
     	<typeAliase type="com.itheima.po.User" />//自动设置别名为小写的user
         <package name="com.itheima.po" />
@@ -539,7 +575,7 @@ jdbc.initalSize=5
 
 ```xml
 <mapper namespace="com.itheima.mapper.CustomerMapper">
-    
+ 
     <select id="findCustomerByNameAndJobs" parameterType="com.itheima.po.Customer" 
 	resultType="com.itheima.po.Customer" resultMap="resultMap">
         select * from t_customer where 1=1
@@ -696,7 +732,7 @@ product的id对应中间表中product_id一对多
 </resultMap>
 ```
 
-### MyBatis+Spring
+## 三、MyBatis+Spring
 
 ##### 1.Dao整合
 
@@ -758,7 +794,21 @@ public class CustomerImpl extends SqlSessionDaoSupport implements CustomerDao{
 
 `<context:component-scan base-package="com.itheima.service"></context:component-scan>`
 
-### SpringMVC
+## 四、SpringMVC
+
+> **前端控制器DispatcherServlet：**`1.1拦截前端请求调用映射器`       `2.2前端控制器通过返回信息，选择合适适配器`  `4.3根据ModelAndView选择合适视图解析器`           `5.2对view渲染即填充数据`
+>
+> **处理器映射器HandlerMapping：**`2.1根据请求url找到具体处理器，生成处理器对象及处理器拦截器，然后交给前端控制器`
+>
+> **处理器适配器HandlerAdapter：**`3.适配器接到2.2命令后，调用适合的处理器`       `4.2将ModelAndView返回给前端控制器`
+>
+> **处理器Handler：**`4.1controller执行，并返回Model和View`
+>
+> **视图解析器ViewResolver**：`5.1解析后向前端控制器返回具体视图view`
+
+> spring-web-4.3.6.jar
+>
+> spring-webmvc-4.3.6.jar
 
 ##### 1.web.xml
 
@@ -768,34 +818,33 @@ public class CustomerImpl extends SqlSessionDaoSupport implements CustomerDao{
 
 ```xml
 <servlet>
- <!-- 前端过滤器 -->
- <servlet-name>springmvc</servlet-name>
- <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
- <!-- 初始化加载配置文件 -->
- <init-param>
-         <param-name>contextConfigLocation</param-name>
-         <param-value>classpath:springmvc-config.xml</param-value>
-  </init-param>
-         <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-         <servlet-name>springmvc</servlet-name>
-         <url-pattern>/</url-pattern>
-   </servlet-mapping>
-<!--编码-->
-   <filter>
-        <filter-name>CharacterEncodingFilter</filter-name>
-        <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>
-        	
-        <init-param>
-        	<param-name>encoding</param-name>
-        	<param-value>UTF-8</param-value>
-        </init-param>
-   </filter>        
-   <filter-mapping>
-        <filter-name>CharacterEncodingFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-   </filter-mapping>
+    <!-- 前端过滤器 -->
+    <servlet-name>springmvc</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+    <!-- 初始化加载配置文件 -->
+    <init-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>classpath:springmvc-config.xml</param-value>
+    </init-param>
+    <load-on-startup>1</load-on-startup>
+</servlet>
+<servlet-mapping>
+    <servlet-name>springmvc</servlet-name>
+    <url-pattern>/</url-pattern>
+</servlet-mapping>
+<!--编码,防止中文乱码-->
+<filter>
+    <filter-name>CharacterEncodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter</filter-class>	
+    <init-param>
+        <param-name>encoding</param-name>
+        <param-value>UTF-8</param-value>
+    </init-param>
+</filter>        
+<filter-mapping>
+    <filter-name>CharacterEncodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+</filter-mapping>
 ```
 
 ##### 2.springmvc-config.xml
@@ -811,17 +860,29 @@ public class CustomerImpl extends SqlSessionDaoSupport implements CustomerDao{
  	<property name="prefix" value="/WEB-INF/jsp/"/>
  	<property name="suffix" value=".jsp"/>
 </bean>
+
+<!--配置注解扫描驱动-->
+自动注册RequestMappingHandlerMapping和RequestMappingHandlerAdapter
+<mvc:annotation-driven />
+
+<!--配置静态资源访问映射-->
+1.根据web服务器名称配置，tomcat默认default
+<mvc:default-servlet-handler />
+2.指定目录
+<mvc:resources location="/js/" mapping="/js/**" />
 ```
 
 ##### 3.@RequestMapping
 
-> spring通过@RequestMapping（）寻找Controller
+> **spring**通过@RequestMapping（）寻找Controller；
 >
-> ​	只有一个属性，省value；（value="/find",method="RequesstMethod.GET"）
+> ​	`只有一个属性，省value；（value="/find",method="RequesstMethod.GET"）`
 >
-> String返回值只跳转视图:“redirect:query”,"forward:query"
+> 其中：
 >
-> model只携带数据，实现解耦合
+> String返回值只跳转视图:“redirect:query”,"forward:query"；
+>
+> model只携带数据，实现解耦合。
 
 ```java
 @RequestMapping("/findCustomerById")
@@ -832,3 +893,179 @@ public String findCustomerById(Integer id,Model model) {
 }
 ```
 
+##### 4.数据绑定
+
+> 目的：将前端的参数绑定到后台的实例中。以下是前端的4中参数：
+>
+> 1. HTTPServletRequest：通过request对象获取请求信息
+> 2. HTTPServletResponse：通过response处理响应信息
+> 3. HttpSession：通过session对象得到session域存储信息
+> 4. Model：将model数据填充到request域中
+
+###### a.简单数据类型
+
+前台name必须与后端name一致就自动绑定。否则配置注解参数
+
+(@RequestParam(value="user_id") Integer id)
+
+###### b.POJO类型
+
+```jsp
+前端：
+<form>
+所属用户：<input type="text" name="user.username"></br>
+</form>
+```
+
+```java
+后端：
+public class Orders {
+	private Integer ordersId;
+	private User user;
+}
+
+@RequestMapping("/findOrdersWithUser")
+public String findOrdersWithUser(Orders orders) {
+		Integer orderId  = orders.getOrdersId();
+    	//包装POJO
+		User user = orders.getUser();
+		String username = user.getUsername();
+}
+```
+
+###### c.数组类型
+
+```jsp
+前端：
+<table width="20%" border="1">
+	<tr>
+		<td>选择</td>
+		<td>用户名</td>
+	</tr>
+	<tr>
+		<td><input name="ids" value="1" type="checkbox"></td>
+		<td>tom</td>
+	</tr>
+	<tr>
+		<td><input name="ids" value="2" type="checkbox"></td>
+		<td>jack</td>
+	</tr>
+	<tr>
+		<td><input name="ids" value="3" type="checkbox"></td>
+		<td>lucy</td>
+	</tr>
+</table>
+```
+
+```java
+后端：
+@RequestMapping("/deleteUsers")
+public String deleteUsers(Integer[] ids) {
+    for(Integer id:ids) {
+        System.out.println("删除了id为"+id+"的用户");
+    return "success";
+}
+```
+
+###### d.集合类型
+
+```jsp
+前端：
+<form action="${pageContext.request.contextPath }/editUsers" method="post" id="formid">
+	<table width="20%" border="1">
+	<tr>
+		<td>选择</td>
+		<td>用户名</td>
+	</tr>
+	<tr>
+		<td><input name="users[0].id" value="1" type="checkbox"></td>
+		<td><input name="users[0].username" value="tome" type="text"></td>
+	</tr>
+	<tr>
+		<td><input name="users[1].id" value="2" type="checkbox"></td>
+		<td><input name="users[1].username" value="jack" type="text"></td>
+	</tr>
+</table>
+```
+
+```java
+后端：
+public class UserVO {
+//集合的set\get方法
+	private List<User> users;
+	public List<User> getUsers(){
+		return users;
+	}
+	public void setUsers(List<User> users) {
+		this.users = users;
+	}
+}
+
+@RequestMapping("/editUsers")
+public String ediUsers(UserVO userList) {
+    List<User> users = userList.getUsers();
+    for(User user:users) {
+    }
+    return "success";
+}
+```
+
+##### 5.拦截器
+
+实现HandlerInterceptor接口，3个黑色加粗为filter方法
+
+> **perHandle:**当返回true，即对拦截放行，开始按顺序执行下面
+>
+> Handle：控制器
+>
+> **postHandle**
+>
+> DispatcherServlet
+>
+> **afterCompletion**
+
+<u>多个拦截器时，preHandle先按照配置文件**顺序执行**，</u>
+
+<u>而postHandle和afterCompletion按照配置顺序**反序执行**。</u>
+
+## 五、Spring+MyBatis+SpringMVC
+
+> Spring+MyBatis：我们是通过Spring实例化Bean，然后调用实例对象查询方法执行MyBatis映射文件的sql语句；
+>
+> Spring+MyBatis+SpringMVC:前台页面执行查询方法，并且查询出数据能够在页面显示
+
+##### xml配置文件（4+1+1）
+
+###### a.数据库常量配置：db.properties.xml
+
+###### b.Spring配置：allicationContext.xml
+
+- 读取数据库常量配置
+- 配置数据库源
+- spring事务管理器源以及开启事务注解扫描
+- 配置MyBatis工厂SQLSessionFactory源
+- mybatis扫描器扫描Dao（实例化bean，调用操作方法）
+- service层配置（进行事务管理）
+
+###### c.MyBatis配置:mybatis-config.xml
+
+- 由于spring配置mybatis和mapper扫描器，所以只需配置POJO类路径进行别名配置。
+
+###### d.SpringMVC配置：spring-config.xml
+
+- 扫描@Controller包注解器
+- 注解驱动器:配置处理器映射器和适配器
+- 静态文件释放
+- 视图解析器
+
+###### e.容器配置文件：web.xml
+
+- spring文件监听器
+- 编码过滤器
+- SpringMVC前端核心控制器：配置springMVC配置文件
+
+###### f.数据库方法操作配置：CustomerMapper.xml
+
+- 增删改查方法
+
+  
